@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from main.models import Rating, Post
+from main.models import Rating, Post, Comment
 
 User = get_user_model()
 
@@ -26,25 +26,48 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
-        fields = ['score', 'post']
+        fields = ["id", "post", "user", "score"]
+        read_only_fields = ["id", "user"]
+
+    def validate_score(self, value):
+        if not (1 <= value <= 5):
+            raise serializers.ValidationError("Оценка должна быть от 1 до 5")
+        return value
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User  # Это ваша модель пользователя (скорее всего, User или CustomUser)
+        fields = ['username']
 
 
 class PostSerializer(serializers.ModelSerializer):
-    average_rating = serializers.ReadOnlyField()
-    ratings = RatingSerializer(many=True, read_only=True)
+    average_rating = serializers.SerializerMethodField()
+    author = UserSerializer(read_only=True)
 
     class Meta:
         model = Post
-        fields = ['id', 'text', 'published_at', 'author', 'average_rating', 'ratings']
+        fields = ["id", "text", "author", "created_at", "average_rating"]
+        read_only_fields = ["id", "text", "author", "created_at", "average_rating"]
 
-    def create(self, validated_data):
-        # Создание поста
-        post = Post.objects.create(**validated_data)
-        post.update_average_rating()
-        return post
+    def get_average_rating(self, obj):
+        return obj.get_average_rating()
 
     def update(self, instance, validated_data):
-        # Обновление поста
-        instance = super().update(instance, validated_data)
-        instance.update_average_rating()
+        instance.text = validated_data.get('text', instance.text)
+        instance.author = validated_data.get('author', instance.author)
+        instance.save()
         return instance
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['id', 'post', 'author_name', 'text', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class CommentEditSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['text']
