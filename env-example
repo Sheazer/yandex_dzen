@@ -1,0 +1,10 @@
+PROD=False
+DEBUG=True
+SECRET_KEY='django-insecure--vkf1-0nb+l8q!5e_4&@*@=d81j(6jju!@qz=gl80+@wkl+&3u'
+IP_ADDRESS=127.0.0.1
+DOMAIN_NAME=localhost
+POSTGRES_DB=
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+POSTGRES_PORT=5432
+POSTGRES_HOST='localhost'
