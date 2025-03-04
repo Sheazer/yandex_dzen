@@ -1,0 +1,45 @@
+# Environment files
+venv/
+.venv
+env/
+.env
+
+
+# Compiled Python files
+*.pyc
+
+# Database files
+db.sqlite3  # Adjust for your database name
+
+# Static files (usually managed by collectstatic)
+localstatic/
+staticfiles/
+
+# Media files
+media/
+
+# dack_static
+back_static
+back_media
+
+# IDE/Editor specific files (choose those you use)
+.idea/
+.vscode/
+pycharm/
+
+# Local configuration files
+local_settings.py
+
+# Coverage reports
+coverage/
+
+# Test database
+test.db
+
+# Anything else project-specific you want to ignore
+*.log
+
+__pycache__/
+**/migrations/**
+!**/migrations/__init__.py
+db.sqlite3
