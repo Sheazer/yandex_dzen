@@ -37,7 +37,7 @@ class RatingSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User  # Это ваша модель пользователя (скорее всего, User или CustomUser)
+        model = User  
         fields = ['username']
 
 
