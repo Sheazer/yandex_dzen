@@ -18,16 +18,13 @@ class IsStaffOrReadOnly(BasePermission):
     """
 
     def has_permission(self, request, view):
-        # Разрешаем GET, HEAD, OPTIONS для всех
         if request.method in ['GET', 'HEAD', 'OPTIONS']:
             return True
         if request.method == 'POST' and request.user.is_authenticated:
             return True
-        # Для остальных методов проверяем, что пользователь авторизован и is_staff=True
         return request.user.is_authenticated and request.user.is_staff
 
     def has_object_permission(self, request, view, obj):
-        # Разрешаем GET, HEAD, OPTIONS для всех
         if request.method in ['GET', 'HEAD', 'OPTIONS']:
             return True
         if request.method == 'POST' and request.user.is_authenticated:
