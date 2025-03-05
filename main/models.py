@@ -36,7 +36,7 @@ class Rating(models.Model):
 
 
 class Comment(models.Model):
-    post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='comments')  # Связь с постом
+    post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='comments')  
     author_name = models.CharField(max_length=255, blank=False)
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
