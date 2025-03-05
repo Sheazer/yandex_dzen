@@ -1,18 +1,17 @@
-# Используем базовый образ, например, ubuntu
-FROM ubuntu:20.04
-
-# Устанавливаем netcat и другие нужные пакеты
-RUN apt-get update && apt-get install -y netcat
-
-# Копируем ваш код и выполняем другие действия
-# Например, копирование файлов приложения:
-COPY . /yandex_dzen/
+# Используем официальный образ Python
+FROM python:3.9-slim
 
 # Устанавливаем рабочую директорию
 WORKDIR /yandex_dzen
 
-# Устанавливаем зависимости
-RUN pip install -r requirements.txt
+# Копируем зависимости
+COPY requirements.txt .
 
-# Указываем entrypoint
-ENTRYPOINT ["/yandex_dzen/entrypoint.sh"]
+# Устанавливаем зависимости
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Копируем исходный код
+COPY . .
+
+# Указываем команду для запуска
+CMD ["gunicorn", "yandex_dzen.wsgi:application", "--bind", "0.0.0.0:8000"]

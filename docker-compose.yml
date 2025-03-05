@@ -1,26 +1,22 @@
-version: '3.9'
-
 services:
   db:
     image: postgres:16
-    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: test_db
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    env_file: .env
-    ports:
-      - "5432:5432"
+      - postgres_data:/var/lib/postgresql/data/
 
   web:
     build: .
-    restart: always
-    depends_on:
-      - db
+    command: gunicorn yandex_dzen.wsgi:application --bind 0.0.0.0:8000
     volumes:
-      - .:/app
+      - .:/yandex_dzen
     ports:
       - "8000:8000"
-    env_file: .env
-    command: ["gunicorn", "--bind", "0.0.0.0:8000", "myproject.wsgi:application"]
+    depends_on:
+      - db
 
 volumes:
   postgres_data:
