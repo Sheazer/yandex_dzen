@@ -34,8 +34,8 @@ def register(request):
 
 
 class AccountView(ListAPIView):
-    queryset = User.objects.all()  # Получаем всех пользователей
-    serializer_class = UserSerializer  # Сериализатор для пользователей
+    queryset = User.objects.all()  
+    serializer_class = UserSerializer  
 
 
 class PostView(ListCrudView):
@@ -52,32 +52,25 @@ class CommentEditView(RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
 
     def get_queryset(self):
-        # Фильтруем комментарии по конкретному посту
         post_id = self.kwargs['post_id']
         return Comment.objects.filter(post_id=post_id)
 
     def perform_update(self, serializer):
-        # Получаем текущий комментарий
         comment = self.get_object()
 
-        # Проверяем, имеет ли пользователь право редактировать этот комментарий
         if comment.author_name != self.request.user.username and not self.request.user.is_staff:
             raise PermissionDenied("You do not have permission to edit this comment.")
 
-        # Извлекаем только текст из запроса, оставляем все остальные поля без изменений
         text = self.request.data.get('text')
 
         if text:
-            # Обновляем только текст комментария, оставляя авторов и пост неизменными
             comment.text = text
             comment.save()
 
-        # Возвращаем обновленный комментарий
         serializer = CommentSerializer(comment)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def perform_destroy(self, instance):
-        # Удаление только для is_staff или владельца комментария
         if instance.author_name != self.request.user.username and not self.request.user.is_staff:
             raise PermissionDenied("You do not have permission to delete this comment.")
         instance.delete()
@@ -102,20 +95,18 @@ class CommentListCreateView(APIView):
         """
         Добавление нового комментария к указанному посту.
         """
-        data = request.data.copy()  # Делаем копию, чтобы изменять
+        data = request.data.copy()  
 
-        data['post'] = post_id  # Привязываем комментарий к посту
+        data['post'] = post_id  
 
-        # Если пользователь авторизован, используем его username
         if request.user.is_authenticated:
             data['author_name'] = request.user.username
         else:
-            # Если пользователь не указал username, используем "Anonymous"
             data['author_name'] = data.get('author_name', 'Anonymous')
 
         serializer = CommentSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()  # Сохраняем новый комментарий
+            serializer.save() 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -139,6 +130,5 @@ class MarkAddView(APIView):
             defaults={"score": score}
         )
 
-        # Возвращаем результат
         return Response(RatingSerializer(rating).data,
                         status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
