@@ -1,153 +1,139 @@
+# Yandex Dzen - Django + Docker + PostgreSQL + Telegram Bot
 
-yandex_dzen/
-│
-├── Dockerfile                # Dockerfile для контейнеризации проекта
-├── docker-compose.yml        # Docker Compose для управления сервисами
-├── requirements.txt          # Список зависимостей проекта
-├── manage.py                 # Основной файл Django
-├── yandex_dzen/              # Директория с проектом Django
-│   ├── __init__.py
-│   ├── settings.py           # Настройки проекта
-│   ├── urls.py               # URL маршруты
-│   ├── wsgi.py               # WSGI-конфигурация
-│   └── asgi.py               # ASGI-конфигурация
-└── entrypoint.sh             # Скрипт для запуска проекта в Docker
-```
+## Описание
 
-## Требования
+Yandex Dzen — это веб-приложение, созданное на Django, с возможностью публикации постов и отправки уведомлений в Telegram.
 
-- Python 3.9+
-- Docker и Docker Compose
-- PostgreSQL (если используется для базы данных)
+В проекте используются:
+- **Django** – фреймворк для веб-приложений
+- **PostgreSQL** – база данных
+- **Docker и Docker Compose** – контейнеризация
+- **Postman** – тестирование API
+- **Telegram Bot** – для отправки уведомлений пользователям
 
-## Установка
+---
 
-### Шаг 1: Клонируйте репозиторий
+## 1. Установка и настройка
 
+### 1.1. Клонируем репозиторий
 ```bash
-git clone https://github.com/Sheazer/yandex_dzen.git
+git clone https://github.com/your-repository-url.git
 cd yandex_dzen
 ```
 
-### Шаг 2: Создайте `.env` файл
+### 1.2. Создаём виртуальное окружение (локальный запуск без Docker, опционально)
+Если планируете запускать без Docker:
+```bash
+python -m venv venv
+source venv/bin/activate  # Для macOS/Linux
+venv\Scripts\activate  # Для Windows
+pip install -r requirements.txt
+```
 
-Создайте файл `.env` в корне проекта и добавьте в него следующие переменные:
-
+### 1.3. Создаём `.env` файл
+Создайте файл `.env` в корне проекта:
 ```dotenv
 DEBUG=True
 SECRET_KEY=your-secret-key
 ALLOWED_HOSTS=localhost,127.0.0.1
-DB_NAME=your_db_name
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
+DB_NAME=yandex_dzen
+DB_USER=postgres
+DB_PASSWORD=postgres
 DB_HOST=db
 DB_PORT=5432
-TELEGRAM_BOT_TOKEN=your-telegram-bot-token
+```
+- **TELEGRAM_BOT_TOKEN** – получите у [@BotFather](https://t.me/BotFather).
+- **DB_HOST=db** – указывает на сервис базы данных в Docker.
+
+---
+
+## 2. Запуск проекта в Docker
+
+### 2.1. Собираем контейнеры
+```bash
+docker-compose build
 ```
 
-**Примечание**: Не забудьте заменить значения переменных на актуальные для вашего проекта.
+### 2.2. Запускаем проект
+```bash
+docker-compose up -d
+```
 
-### Шаг 3: Запустите Docker контейнеры
+После этого приложение будет доступно по адресу:
+[http://localhost:8000](http://localhost:8000)
 
-Для работы с Docker контейнерами выполните следующие шаги:
+---
 
-1. **Соберите образы**:
+## 3. Работа с базой данных
 
-   ```bash
-   docker-compose build
-   ```
-
-2. **Запустите контейнеры**:
-
-   ```bash
-   docker-compose up
-   ```
-
-3. После этого все контейнеры будут подняты, и ваше приложение будет доступно по адресу [http://localhost:8000](http://localhost:8000).
-
-## Использование
-
-### Применение миграций
-
-Для применения миграций в базе данных выполните команду:
-
+### 3.1. Применяем миграции
 ```bash
 docker-compose run web python manage.py migrate
 ```
 
-### Создание суперпользователя
-
-Для создания суперпользователя используйте команду:
-
+### 3.2. Создаём суперпользователя
 ```bash
 docker-compose run web python manage.py createsuperuser
 ```
+Теперь можно зайти в админ-панель:
+[http://localhost:8000/admin](http://localhost:8000/admin)
 
-### Доступ к контейнерам
+---
 
-Для доступа к контейнеру с Django (например, для выполнения команд) используйте:
+## 4. Работа с API через Postman
 
-```bash
-docker-compose exec web bash
+1. **Открываем Postman**
+2. **Импортируем файл yandex.postman_collection.json**
+3. **Выбираем метод `POST` и указываем URL:**
+   ```
+   http://localhost:8000/api/login/
+   ```
+4. **В Body (JSON) передаем данные:**
+   ```json
+   {
+      "username": "user",
+      "password": "pass"
+   }
+   ```
+5. **Нажимаем `Send`**
+
+### 4.1. Проверка ответа API
+```json
+{
+   "refresh": "refresh_token",
+   "access": "token",
+}
 ```
+Везде в заголовке запросов нужно использовать access_token.
+Выбирайте Bearer token.
 
-### Просмотр логов
+### 4.2. Уведомление в Telegram
+Если у пользователя есть `telegram_chat_id`, бот отправит сообщение в Telegram. 
+При создании постов.
+---
 
-Чтобы просматривать логи приложения, используйте:
+## 5. Файлы проекта и их назначение
 
-```bash
-docker-compose logs -f
-```
-
-### Остановка контейнеров
-
-Для остановки контейнеров выполните:
-
-```bash
-docker-compose down
-```
-
-## Контейнеризация с Docker
-
-Проект контейнеризирован с использованием Docker. Вот как это работает:
-
-- **Dockerfile**: файл для создания образа приложения. В нем устанавливаются все зависимости и конфигурируется запуск Django проекта.
-- **docker-compose.yml**: конфигурационный файл для упрощения работы с несколькими контейнерами (например, веб-сервер и база данных).
-
-### Dockerfile
-
-Dockerfile для проекта:
-
+### 5.1. `Dockerfile`
 ```dockerfile
-# Используем официальный образ Python
 FROM python:3.9-slim
 
-# Устанавливаем необходимые зависимости
-RUN apt-get update && apt-get install -y \
-    netcat \
-    && apt-get clean
+RUN apt-get update && apt-get install -y netcat && apt-get clean
 
-# Устанавливаем рабочую директорию
 WORKDIR /yandex_dzen
 
-# Копируем файл зависимостей в контейнер
 COPY requirements.txt /yandex_dzen/
 
-# Устанавливаем зависимости
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем весь проект в контейнер
 COPY . /yandex_dzen/
 
-# Открываем порт 8000 для работы с приложением
 EXPOSE 8000
 
-# Указываем команду для запуска проекта
 CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
 ```
 
-### docker-compose.yml
-
+### 5.2. `docker-compose.yml`
 ```yaml
 version: '3.9'
 
@@ -155,9 +141,9 @@ services:
   db:
     image: postgres:13
     environment:
-      POSTGRES_DB: your_db_name
-      POSTGRES_USER: your_db_user
-      POSTGRES_PASSWORD: your_db_password
+      POSTGRES_DB: yandex_dzen
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -169,7 +155,7 @@ services:
     volumes:
       - .:/yandex_dzen
     ports:
-      - 8000:8000
+      - "8000:8000"
     depends_on:
       - db
     networks:
@@ -183,35 +169,52 @@ networks:
     driver: bridge
 ```
 
-### entrypoint.sh
-
-В `entrypoint.sh` мы добавляем команду для ожидания подключения базы данных перед запуском Django приложения:
-
+### 5.3. `entrypoint.sh`
 ```bash
 #!/bin/sh
 
-# Ожидаем подключения к базе данных
-echo "Waiting for database to be ready..."
 until nc -z -v -w30 db 5432; do
-  echo "Waiting for database connection..."
+  echo "Ожидание..."
   sleep 1
 done
 
-# Запускаем сервер
-echo "Database connected. Starting Django server..."
 exec "$@"
 ```
 
-## Тестирование
+---
 
-1. Создайте посты через админку Django или API.
-2. Убедитесь, что после публикации поста отправляется сообщение в Telegram.
+## 6. Частые ошибки и их исправление
 
-### Примечания
+### 6.1. `zsh: command not found: docker-compose`
+```bash
+docker-compose --version
+```
+Если нет, установите:
+```bash
+sudo apt install docker-compose
+```
 
-- Убедитесь, что ваш **Telegram бот** имеет разрешение на отправку сообщений в чаты (пользователи должны быть подписаны на бота).
-- Пример работы с PostgreSQL может потребовать настройки дополнительных параметров подключения в Django.
+### 6.2. `ERROR: No matching distribution found for -r requirements.txt`
+```bash
+ls -l requirements.txt
+```
+
+### 6.3. `Database connection refused`
+```bash
+docker-compose ps
+docker-compose down && docker-compose up -d
+```
 
 ---
 
-Теперь файл готов к использованию. Вы можете просто скопировать его в проект.
+## 7. Остановка контейнеров
+```bash
+docker-compose down
+```
+
+---
+
+## 8. Разработка и тестирование
+Редактируйте файлы в редакторе, Docker автоматически применит изменения после перезапуска.
+
+---
